@@ -13,7 +13,13 @@ namespace Publisher
         private static string topic = "weather-topic";
         static void Main(string[] args)
         {
-            Console.ForegroundColor = ConsoleColor.Green;
+            if (args.Length < 2)
+            {
+                Console.WriteLine("All parameters should be provided before sending messages.");
+                Console.WriteLine("Please enter parameters as the following \"End-point\" \"Topic Name\". ");
+                Environment.Exit(0);
+            }
+
             Console.WriteLine("-----   This is a publisher   -----");
             Console.WriteLine(" ");
             Console.WriteLine(" ");
@@ -28,8 +34,8 @@ namespace Publisher
                 if (message == "q")
                     break;
 
-                var serviceBusConnectionString = ConfigurationManager.AppSettings["serviceBus"];
-                var topicClient = new TopicClient(serviceBusConnectionString, topic);
+                //var serviceBusConnectionString = ConfigurationManager.AppSettings["serviceBus"];
+                var topicClient = new TopicClient(args[0], args[1]);
                 var body = Encoding.UTF8.GetBytes(message);
                 var busMessage = new Message(body);
                 topicClient.SendAsync(busMessage).GetAwaiter().GetResult();

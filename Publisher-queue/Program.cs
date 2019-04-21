@@ -12,45 +12,56 @@ namespace Publisher_queue
 {
     class Program
     {
+        //static string serviceBus = ConfigurationManager.AppSettings["serviceBus"];
+        //static string queueName = ConfigurationManager.AppSettings["queueName"];
+
         static IQueueClient queueClient;
 
         static void Main(string[] args)
         {
-            MainAsync().GetAwaiter().GetResult();
+            if (args.Length < 3)
+            {
+                Console.WriteLine("All parameters should be provided before sending.");
+                Console.WriteLine("Please enter parameters as the following \"End-point\" \"Queue Name\" \"Message Content\". ");
+                Environment.Exit(0);
+            }
+            MainAsync(args).GetAwaiter().GetResult();
         }
 
-        static async Task MainAsync()
+        static async Task MainAsync(string[] args)
         {
-            const int numberOfMessages = 10;
-            queueClient = new QueueClient(ConfigurationManager.AppSettings["serviceBus"], ConfigurationManager.AppSettings["queueName"]);
+            string[] messages = args.Skip(2).ToArray();
+            int numberOfMessages = args.Count(s => s != null);
+            queueClient = new QueueClient(args[0], args[1]);
 
-            Console.WriteLine("======================================================");
+            Console.WriteLine("=======================================================");
             Console.WriteLine("Press ENTER key to exit after sending all the messages.");
-            Console.WriteLine("======================================================");
+            Console.WriteLine("=======================================================");
 
             // Send Messages
-            await SendMessagesAsync(numberOfMessages);
+            await SendMessagesAsync(messages, numberOfMessages - 2);
 
+            Console.WriteLine("All messages has been sent.");
             Console.ReadKey();
 
             await queueClient.CloseAsync();
+
+            
         }
 
-        static async Task SendMessagesAsync(int numberOfMessagesToSend)
+        static async Task SendMessagesAsync(string[] messages, int numberOfMessagesToSend)
         {
             try
             {
-                for (var i = 0; i < numberOfMessagesToSend; i++)
+                foreach (string message in messages)
                 {
-                    // Create a new message to send to the queue
-                    string messageBody = String.Format("Message {0}", i);
-                    var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+                    var messageToSend = new Message(Encoding.UTF8.GetBytes(message));
 
                     // Write the body of the message to the console
-                    Console.WriteLine(String.Format("Message {0}", messageBody));
+                    Console.WriteLine(String.Format("Sending Message \"{0}\"", message));
 
                     // Send the message to the queue
-                    await queueClient.SendAsync(message);
+                    await queueClient.SendAsync(messageToSend);
                 }
             }
             catch (Exception exception)

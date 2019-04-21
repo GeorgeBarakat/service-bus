@@ -15,12 +15,18 @@ namespace Listener_queue
 
         static void Main(string[] args)
         {
-            MainAsync().GetAwaiter().GetResult();
+            if (args.Length < 2)
+            {
+                Console.WriteLine("All parameters should be provided before listening.");
+                Console.WriteLine("Please enter parameters as the following \"End-point\" \"Queue Name\". ");
+                Environment.Exit(0);
+            }
+            MainAsync(args).GetAwaiter().GetResult();
         }
 
-        static async Task MainAsync()
+        static async Task MainAsync(string[] args)
         {
-            queueClient = new QueueClient(ConfigurationManager.AppSettings["serviceBus"], ConfigurationManager.AppSettings["queueName"]);
+            queueClient = new QueueClient(args[0], args[1]);
 
             Console.WriteLine("======================================================");
             Console.WriteLine("Press ENTER key to exit after receiving all the messages.");
